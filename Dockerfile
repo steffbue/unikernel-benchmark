@@ -8,9 +8,17 @@ RUN curl https://raw.githubusercontent.com/cloudius-systems/capstan/master/scrip
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt -y install nodejs
 
+RUN apt install -y qemu-utils
+
+RUN apt install -y unzip
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
+
 
 COPY backend /usr/src/backend
 COPY scripts /usr/src/scripts
+COPY config /usr/src/config
 
 WORKDIR /usr/src/backend
 RUN npm install

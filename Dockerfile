@@ -16,4 +16,5 @@ WORKDIR /usr/src/backend
 RUN npm install
 
 WORKDIR /usr/src/scripts
+RUN chmod -R +x .
 CMD while true; do sleep 2; done

@@ -4,7 +4,12 @@
 		{
 			"Effect": "Allow",
 			"Action": [ "s3:GetBucketLocation", "s3:GetObject", "s3:ListBucket" ],
-			"Resource": [ "arn:aws:s3:::disk-image-file-bucket", "arn:aws:s3:::disk-image-file-bucket/*" ]
+			"Resource": [ "arn:aws:s3:::osvimport", "arn:aws:s3:::osvimport/*" ]
+		},
+		{
+			"Effect": "Allow",
+			"Action": [ "ec2:ModifySnapshotAttribute", "ec2:CopySnapshot", "ec2:RegisterImage", "ec2:Describe*" ],
+			"Resource": "*"
 		}
 	]
 }

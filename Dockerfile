@@ -38,6 +38,9 @@ WORKDIR /usr/src/backend_osv
 RUN /root/bin/capstan package compose DummyBackend --pull-missing
 RUN timeout 10s /root/bin/capstan run DummyBackend; exit 0
 
+WORKDIR /root/.capstan/instances/qemu/DummyBackend
+RUN qemu-img convert -f qcow2 -O vmdk disk.qcow2 disk.vmdk
+
 WORKDIR /usr/src/scripts
 RUN chmod -R +x .
 CMD while true; do sleep 2; done

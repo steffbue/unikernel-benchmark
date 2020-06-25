@@ -1,0 +1,10 @@
+[
+	{
+		"Description": "OSv Backend AMI",
+		"Format": "vmdk",
+		"UserBucket": {
+			"S3Bucket": "osvimport",
+			"S3Key": "disk.vmdk"
+		}
+	}
+]

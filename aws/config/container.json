@@ -1,0 +1,8 @@
+{
+	"Description": "OSv Backend AMI",
+	"Format": "vhd",
+	"UserBucket": {
+		"S3Bucket": "osvimport",
+		"S3Key": "disk.vhd"
+	}
+}

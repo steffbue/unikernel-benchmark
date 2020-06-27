@@ -41,9 +41,10 @@ RUN /root/bin/capstan package compose DummyBackend --pull-missing
 RUN timeout 10s /root/bin/capstan run DummyBackend; exit 0
 
 WORKDIR /root/.capstan/instances/qemu/DummyBackend
-RUN qemu-img convert -f qcow2 -O vmdk disk.qcow2 disk.vmdk
+RUN qemu-img convert -f qcow2 -O vpc disk.qcow2 disk.vhd
 
 RUN pip3 install boto3
+
 WORKDIR /usr/src/scripts
 RUN chmod -R +x .
 CMD python3 prepare-benchmark.py

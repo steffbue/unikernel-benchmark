@@ -1,6 +1,0 @@
-name: DummyBackend
-title: DummyBackend
-author: Steffen
-require:
-- osv.node-js
-created: "2020-06-25T08:56:35-07:00"

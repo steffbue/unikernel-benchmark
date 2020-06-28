@@ -1,5 +1,5 @@
 runtime: native
 config_set:
   default:
-    bootcmd: "libnode.so index.js"
+    bootcmd: "libnode.so server.js"
 config_set_default: default

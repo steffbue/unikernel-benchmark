@@ -65,8 +65,8 @@ ec2_resource1 = boto3.session.Session().resource('ec2')
 ec2_resource2 = boto3.session.Session().resource('ec2')
 
 try:
-    key_name, key_material = create_benchmark_keypair(ec2_client)
-    secgroup_id = create_and_authorize_benchmark_security_group(ec2_client)
+    key_name, key_material = create_benchmark_keypair(ec2_client1)
+    secgroup_id = create_and_authorize_benchmark_security_group(ec2_client1)
     
     t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))
     t2 = threading.Thread(target=prepare_linux_benchmark_instance, args(ec2_client2, ec2_resource2, key_name, key_material, secgroup_id))

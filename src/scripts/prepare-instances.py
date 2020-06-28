@@ -1,6 +1,8 @@
 import os
 import subprocess
+import threading
 import boto3
+import boto3.session
 from botocore.exceptions import ClientError
 
 
@@ -57,15 +59,22 @@ def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, key_mat
     instance.stop()
     
 
-ec2_client = boto3.client('ec2')
-ec2_resource = boto3.resource('ec2')
+ec2_client1 = boto3.session.Session().client('ec2')
+ec2_client2 = boto3.session.Session().client('ec2')
+ec2_resource1 = boto3.session.Session().resource('ec2')
+ec2_resource2 = boto3.session.Session().resource('ec2')
 
 try:
     key_name, key_material = create_benchmark_keypair(ec2_client)
     secgroup_id = create_and_authorize_benchmark_security_group(ec2_client)
-    prepare_osv_benchmark_instance(ec2_client, ec2_resource, key_name, secgroup_id)
-    prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, key_material, secgroup_id)
     
+    t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))
+    t2 = threading.Thread(target=prepare_linux_benchmark_instance, args(ec2_client2, ec2_resource2, key_name, key_material, secgroup_id))
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
 
     
     

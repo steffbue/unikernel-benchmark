@@ -22,7 +22,6 @@ RUN apt install -y python3-pip
 
 COPY backend /usr/src/backend_osv
 COPY backend /usr/src/backend_linux
-COPY scripts /usr/src/scripts
 COPY aws /usr/src/aws
 COPY osv /usr/src/osv
 
@@ -44,6 +43,8 @@ WORKDIR /root/.capstan/instances/qemu/DummyBackend
 RUN qemu-img convert -f qcow2 -O vpc disk.qcow2 disk.vhd
 
 RUN pip3 install boto3
+
+COPY scripts /usr/src/scripts
 
 WORKDIR /usr/src/scripts
 RUN chmod -R +x .

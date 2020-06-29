@@ -1,9 +1,14 @@
+import json
+import os
 import boto3
 from botocore.exceptions import ClientError
 
 iam_client = boto3.client('iam')
+ec2_client = boto3.client('ec2')
+s3_client = boto3.client('s3')
+s3_resource = boto3.resource('s3')
+
 tag = {'Key': 'Benchmark', 'Value': 'Unikernel'}
-tag_specification_snapshot = {'ResourceType': 'snapshot', 'Tags': [tag]}
 
 
 def create_vmimport_policy(iam_client):
@@ -20,13 +25,17 @@ def create_vmimport_policy(iam_client):
         role_policy_json_string = json.dumps(role_policy_json)
         iam_client.put_role_policy(RoleName='vmimport', PolicyName='vmimport', PolicyDocument=role_policy_json_string)
         role_policy_file.close()
+
+    waiter = iam_client.get_waiter('role_exists')
+    waiter.wait(RoleName='vmimport', WaiterConfig={'Delay': 20, 'MaxAttempts': 20})
+    
     return
 
-def upload_osvimage_s3(s3_client):
+def upload_osvimage_s3(s3_client, s3_resource):
     os.chdir('/root/.capstan/instances/qemu/DummyBackend')
 
-    s3_client.create_bucket(Bucket='osvimport')
-    bucket = s3.Bucket('osvimport')
+    s3_client.create_bucket(Bucket='osvimport', CreateBucketConfiguration={'LocationConstraint': os.environ['AWS_DEFAULT_REGION']})
+    bucket = s3_resource.Bucket('osvimport')
     bucket.upload_file('disk.vhd', 'disk.vhd')
     return
 
@@ -35,13 +44,14 @@ def import_osvimage_snapshot(ec2_client):
 
     with open('container.json', 'r') as container_file:
         container_json = json.load(container_file)
-        ec2_client.import_snapshot(Description='OSv Image', DiskContainer=container_json, TagSpecifications=[tag_specification_snapshot])
+        snapshot = ec2_client.import_snapshot(Description='OSv Image', DiskContainer=container_json, RoleName='vmimport')
+        ec2_client.create_tags(Resources=[snapshot['SnapshotId']], Tags=[tag])
         container_file.close()
     return
 
 
 try:
-    upload_osvimage_s3(ec2_client)
+    upload_osvimage_s3(s3_client, s3_resource)
     create_vmimport_policy(iam_client)
     import_osvimage_snapshot(ec2_client)
     

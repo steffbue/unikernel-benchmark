@@ -7,13 +7,15 @@ from botocore.exceptions import ClientError
 
 
 
-def create_benchmark_keypair(ec2_client):
+def create_benchmark_keypair(ec2_client, ec2_resource):
     resp_keypair = ec2_client.create_key_pair(KeyName="benchmark-key")
+    ec2_resource.create_tags(Resources=[resp_keypair['KeyId']], Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}])
     return resp_keypair['KeyName'], resp_keypair['KeyMaterial']
 
-def create_and_authorize_benchmark_security_group(ec2_client):
+def create_and_authorize_benchmark_security_group(ec2_client, ec2_resource):
     resp_secgrp = ec2_client.create_security_group(GroupName="security-group-benchmark", Description="security-group-benchmark")
     sec_grp_id = resp_secgrp['GroupId']
+    ec2_resource.create_tags(Resources=[sec_grp_id], Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}])
     
     HTTPPermission = {'IpProtocol': 'tcp', 'FromPort': 80, 'ToPort': 80, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
     SSHPermission = {'IpProtocol': 'tcp', 'FromPort': 22, 'ToPort': 22, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
@@ -31,6 +33,7 @@ def prepare_osv_benchmark_instance(ec2_client, ec2_resource, key_name, secgroup_
     ami_id = resp_ami['Images'][0]['ImageId']
 
     instance_id = create_benchmark_instance(ec2_resource, ami_id, key_name, secgroup_id)
+    ec2_resource.create_tags(Resources=[instance_id], Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}])
     instance = ec2_resource.Instance(id=instance_id)
     instance.wait_until_running()
     instance.stop()
@@ -42,18 +45,19 @@ def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, key_mat
     ami_id = resp_ami['Images'][0]['ImageId']
     
     instance_id = create_benchmark_instance(ec2_resource, ami_id, key_name, secgroup_id)
+    ec2_resource.create_tags(Resources=[instance_id], Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}])
     instance = ec2_resource.Instance(id=instance_id)
     instance.wait_until_running()
 
     #Connecting to instance
-    with open('benchmark-key.pem', 'w') as f:
+    with open('benchmark-key.pem', 'w+') as f:
         f.write(key_material)
         f.close()
     os.chmod('benchmark-key.pem', 400)
-    subprocess.call('scp -rp -i benchmark-key.pem /usr/src/backend_linux ec2-user@{}:/home/ec2-user/'.format(instance.public_ip_address))
-    subprocess.call('scp -rp -i benchmark-key.pem /usr/src/aws/config/nodeserver.service ec2-user@{}:/etc/systemd/system/nodeserver.service'.format(instance.public_ip_address))
-    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /home/ec2-user; . ~/.nvm/nvm.sh; nvm install node; npm install'".format(instance.public_ip_address))
-    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /etc/systemd/system; systemctl enable nodeserver.service; systemctl start nodeserver.service'".format(instance.public_ip_address))
+    subprocess.call('scp -rp -i benchmark-key.pem /usr/src/backend_linux ec2-user@{}:/home/ec2-user/'.format(instance.public_ip_address), shell=True)
+    subprocess.call('scp -rp -i benchmark-key.pem /usr/src/aws/config/nodeserver.service ec2-user@{}:/etc/systemd/system/nodeserver.service'.format(instance.public_ip_address), shell=True)
+    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /home/ec2-user; . ~/.nvm/nvm.sh; nvm install node; npm install'".format(instance.public_ip_address), shell=True)
+    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /etc/systemd/system; systemctl enable nodeserver.service; systemctl start nodeserver.service'".format(instance.public_ip_address), shell=True)
     
     #Stopping instance
     instance.stop()
@@ -65,8 +69,8 @@ ec2_resource1 = boto3.session.Session().resource('ec2')
 ec2_resource2 = boto3.session.Session().resource('ec2')
 
 try:
-    key_name, key_material = create_benchmark_keypair(ec2_client1)
-    secgroup_id = create_and_authorize_benchmark_security_group(ec2_client1)
+    key_name, key_material = create_benchmark_keypair(ec2_client1, ec2_resource1)
+    secgroup_id = create_and_authorize_benchmark_security_group(ec2_client1, ec2_resource1)
     
     t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))
     t2 = threading.Thread(target=prepare_linux_benchmark_instance, args=(ec2_client2, ec2_resource2, key_name, key_material, secgroup_id))

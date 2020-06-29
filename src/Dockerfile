@@ -25,6 +25,8 @@ COPY backend /usr/src/backend_linux
 COPY aws /usr/src/aws
 COPY osv /usr/src/osv
 
+RUN apt install -y openssh-client
+
 WORKDIR /usr/src/backend_osv
 RUN npm install
 RUN /root/bin/capstan package init --name "DummyBackend" --title "DummyBackend" --author "Steffen" --require osv.node-js

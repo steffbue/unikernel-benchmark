@@ -19,17 +19,15 @@ RUN apt install -y less
 
 RUN apt install -y python3-pip
 
-
-COPY backend /usr/src/backend_osv
-COPY backend /usr/src/backend_linux
-COPY aws /usr/src/aws
-COPY osv /usr/src/osv
-
 RUN apt install -y openssh-client
 
 RUN pip3 install boto3
 
 COPY scripts /usr/src/scripts
+COPY backend /usr/src/backend_osv
+COPY backend /usr/src/backend_linux
+COPY aws /usr/src/aws
+COPY osv /usr/src/osv
 
 WORKDIR /usr/src/scripts
 RUN chmod -R +x .

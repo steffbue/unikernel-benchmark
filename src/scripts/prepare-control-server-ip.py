@@ -1,3 +1,4 @@
+import os
 import boto3
 from botocore.exceptions import ClientError
 
@@ -6,7 +7,7 @@ ec2_client = boto3.client('ec2')
 
 def create_text_file_with_ip(path, public_ip):
     os.chdir(path)
-    with open(path, 'w') as output_file:
+    with open(path + 'ip-info.txt', 'w') as output_file:
         output_file.write(public_ip)
         output_file.close()
     return

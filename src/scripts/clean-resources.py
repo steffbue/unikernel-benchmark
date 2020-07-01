@@ -33,17 +33,17 @@ for snapshot in response['Snapshots']:
     snapshot_id = snapshot['SnapshotId']
     ec2_client.delete_snapshot(SnapshotId=snapshot_id)
 
-
-iam_client.delete_role_policy(RoleName='vmimport', PolicyName='vmimport')
-iam_client.delete_role(RoleName='vmimport')
+response = ec2_client.describe_addresses(Filters=filter)
+for address in response['Addresses']:
+    allocation_id = address['AllocationId']
+    ec2_client.release_address(AllocationId=allocation_id)
 
 bucket = s3_resource.Bucket('osvimport')
 bucket.objects.all().delete()
 bucket.delete()
 
-response = ec2_client.describe_addresses(Filters=filter)
-for address in response['Addresses']:
-    allocation_id = address['AllocationId']
-    ec2_client.release_address(AllocationId=allocation_id)
+iam_client.delete_role_policy(RoleName='vmimport', PolicyName='vmimport')
+iam_client.delete_role(RoleName='vmimport')
+
 
 

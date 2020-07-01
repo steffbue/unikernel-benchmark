@@ -1,4 +1,5 @@
 import os
+import time
 import subprocess
 import threading
 import boto3
@@ -9,7 +10,8 @@ from botocore.exceptions import ClientError
 
 def create_benchmark_keypair(ec2_client, ec2_resource):
     resp_keypair = ec2_client.create_key_pair(KeyName="benchmark-key")
-    ec2_resource.create_tags(Resources=[resp_keypair['KeyId']], Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}])
+    print(resp_keypair)
+    ec2_resource.create_tags(Resources=[resp_keypair['KeyPairId']], Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}])
     return resp_keypair['KeyName'], resp_keypair['KeyMaterial']
 
 def create_and_authorize_benchmark_security_group(ec2_client, ec2_resource):
@@ -50,14 +52,17 @@ def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, key_mat
     instance.wait_until_running()
 
     #Connecting to instance
+    os.chdir('/usr/src/scripts')
     with open('benchmark-key.pem', 'w+') as f:
         f.write(key_material)
         f.close()
-    os.chmod('benchmark-key.pem', 400)
-
-    subprocess.call('scp -r -i benchmark-key.pem /usr/src/backend_linux ec2-user@{}:/home/ec2-user/'.format(instance.public_ip_address), shell=True)
-    subprocess.call('scp -i benchmark-key.pem /usr/src/aws/config/nodeserver.service ec2-user@{}:/etc/systemd/system/nodeserver.service'.format(instance.public_ip_address), shell=True)
-    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /home/ec2-user/; ./startup.sh'".format(instance.public_ip_address), shell=True)
+    os.chmod('benchmark-key.pem', 0o400)
+    time.sleep(10)
+    subprocess.call('./upload-backend-linux.sh {}'.format(instance.public_ip_address), shell=True)
+    
+    #subprocess.call('scp -r -i benchmark-key.pem /usr/src/backend_linux ec2-user@{}:/home/ec2-user/'.format(instance.public_ip_address), shell=True)
+    #subprocess.call('scp -i benchmark-key.pem /usr/src/aws/config/nodeserver.service ec2-user@{}:/etc/systemd/system/nodeserver.service'.format(instance.public_ip_address), shell=True)
+    #subprocess.call("echo 'cd /home/ec2-user/; ./startup.sh' | ssh -o 'StrictHostKeyChecking no' -o 'ConnectionAttempts 30' -i benchmark-key.pem ec2-user@{} /bin/bash".format(instance.public_ip_address), shell=True)
     
     #Stopping instance
     instance.stop()
@@ -72,12 +77,12 @@ try:
     key_name, key_material = create_benchmark_keypair(ec2_client1, ec2_resource1)
     secgroup_id = create_and_authorize_benchmark_security_group(ec2_client1, ec2_resource1)
     
-    t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))
+    #t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))
     t2 = threading.Thread(target=prepare_linux_benchmark_instance, args=(ec2_client2, ec2_resource2, key_name, key_material, secgroup_id))
-    t1.start()
+    #t1.start()
     t2.start()
 
-    t1.join()
+    #t1.join()
     t2.join()
 
     

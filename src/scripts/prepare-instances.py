@@ -54,10 +54,10 @@ def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, key_mat
         f.write(key_material)
         f.close()
     os.chmod('benchmark-key.pem', 400)
-    subprocess.call('scp -rp -i benchmark-key.pem /usr/src/backend_linux ec2-user@{}:/home/ec2-user/'.format(instance.public_ip_address), shell=True)
-    subprocess.call('scp -rp -i benchmark-key.pem /usr/src/aws/config/nodeserver.service ec2-user@{}:/etc/systemd/system/nodeserver.service'.format(instance.public_ip_address), shell=True)
-    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /home/ec2-user; . ~/.nvm/nvm.sh; nvm install node; npm install'".format(instance.public_ip_address), shell=True)
-    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /etc/systemd/system; systemctl enable nodeserver.service; systemctl start nodeserver.service'".format(instance.public_ip_address), shell=True)
+
+    subprocess.call('scp -r -i benchmark-key.pem /usr/src/backend_linux ec2-user@{}:/home/ec2-user/'.format(instance.public_ip_address), shell=True)
+    subprocess.call('scp -i benchmark-key.pem /usr/src/aws/config/nodeserver.service ec2-user@{}:/etc/systemd/system/nodeserver.service'.format(instance.public_ip_address), shell=True)
+    subprocess.call("ssh -i benchmark-key.pem ec2-user@{} 'cd /home/ec2-user/; ./startup.sh'".format(instance.public_ip_address), shell=True)
     
     #Stopping instance
     instance.stop()

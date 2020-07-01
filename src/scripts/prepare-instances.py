@@ -40,8 +40,7 @@ def prepare_osv_benchmark_instance(ec2_client, ec2_resource, key_name, secgroup_
     return instance_id
 
 def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile):
-    resp_ami = ec2_client.describe_images(Filters=[{'Name': 'description', 'Values': ['Amazon Linux 2 LTS Candidate AMI 2017.12.0.20171212.2 x86_64 HVM EBS']}], Owners=['amazon'])
-    ami_id = resp_ami['Images'][0]['ImageId']
+    ami_id = 'ami-0a02ee601d742e89f'
 
     os.chdir('/usr/src/scripts')
     download_file = open('download-linuxbackend.sh', 'r')
@@ -55,7 +54,7 @@ def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, secgrou
     instance.wait_until_running()
 
     # Time for UserData script to prepare instance
-    time.sleep(30)
+    time.sleep(120)
     
     #Stopping instance
     instance.stop()
@@ -72,7 +71,7 @@ try:
     secgroup_id = create_and_authorize_benchmark_security_group(ec2_client1, ec2_resource1)
     
     resp_instance_profile = iam_client.get_instance_profile(InstanceProfileName='s3access-profile')
-    iam_instance_profile = {'Arn': resp_instance_profile['InstanceProfile']['Arn'], 'Name': resp_instance_profile['InstanceProfile']['InstanceProfileName']}
+    iam_instance_profile = {'Arn': resp_instance_profile['InstanceProfile']['Arn']}
 
 
     #t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))

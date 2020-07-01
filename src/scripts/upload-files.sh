@@ -12,6 +12,7 @@ cd /usr/src
 tar -zcvf backend.tar.gz backend_linux
 aws s3api create-bucket --bucket linuxbackend --region $AWS_DEFAULT_REGION --create-bucket-configuration LocationConstraint=$AWS_DEFAULT_REGION
 aws s3 cp backend.tar.gz s3://linuxbackend
+cd /usr/src/aws/config
 
 # Upload Control backend to S3 (used for boot time metric)
 #tar -zcvf backend.tar.gz control_backend

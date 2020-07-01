@@ -40,3 +40,10 @@ iam_client.delete_role(RoleName='vmimport')
 bucket = s3_resource.Bucket('osvimport')
 bucket.objects.all().delete()
 bucket.delete()
+
+response = ec2_client.describe_addresses(Filters=filter)
+for address in response['Addresses']:
+    allocation_id = address['AllocationId']
+    ec2_client.release_address(AllocationId=allocation_id)
+
+

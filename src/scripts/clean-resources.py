@@ -1,15 +1,25 @@
 import boto3
 from botocore.exceptions import ClientError
 
+
 ec2_client = boto3.client('ec2')
+ec2_resource = boto3.resource('ec2')
 s3_client = boto3.client('s3')
 s3_resource = boto3.resource('s3')
 iam_client = boto3.client('iam')
 
 filter = [{'Name': 'tag:Benchmark', 'Values': ['Unikernel']}]
 
+
+
 response = ec2_client.describe_instances(Filters=filter)
 print(response)
+for reservation in response['Reservations']:
+    for instance in reservation['Instances']:
+        instance_id = instance['InstanceId']
+        instance = ec2_resource.Instance(instance_id)
+        instance.wait_until_terminated()
+    
 
 response = ec2_client.describe_key_pairs(Filters=filter)
 for keypair in response['KeyPairs']:

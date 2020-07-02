@@ -9,10 +9,14 @@ const NS_TO_MS = 1e-6;
 
 ipAddr = fs.readFileSync('ip-info.txt')
 
-axios.put(`http://${ipAddr}:80/metric/boot`)
-	.catch(error => {
-		console.log(error)
-	})
+axios({
+	method: 'put',
+	url: `http://${ipAddr}:80/metric/boot`,
+	timeout: 500
+})
+.catch(error => {
+	console.log(error)
+})
 
 
 
@@ -29,4 +33,4 @@ app.get('/metric/execution', (req, res) => {
 	res.end()
 });
 
-app.listen(80);
+app.listen(8080);

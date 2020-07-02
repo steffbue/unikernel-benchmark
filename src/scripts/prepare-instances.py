@@ -74,12 +74,12 @@ try:
     iam_instance_profile = {'Arn': resp_instance_profile['InstanceProfile']['Arn']}
 
 
-    #t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))
+    t1 = threading.Thread(target=prepare_osv_benchmark_instance, args=(ec2_client1, ec2_resource1, key_name, secgroup_id))
     t2 = threading.Thread(target=prepare_linux_benchmark_instance, args=(ec2_client2, ec2_resource2, key_name, secgroup_id, iam_instance_profile))
-    #t1.start()
+    t1.start()
     t2.start()
 
-    #t1.join()
+    t1.join()
     t2.join()
 
     

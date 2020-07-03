@@ -43,7 +43,7 @@ def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, secgrou
     ami_id = 'ami-0a02ee601d742e89f'
 
     os.chdir('/usr/src/scripts')
-    download_file = open('download-linuxbackend.sh', 'r')
+    download_file = open('userdata-linuxbackend.sh', 'r')
     user_data = download_file.read()
     download_file.close()
 

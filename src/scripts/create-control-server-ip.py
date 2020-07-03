@@ -15,11 +15,13 @@ def create_text_file_with_ip(path, public_ip):
 
 try:
     allocation = ec2_client.allocate_address()
-    ec2_client.create_tags(Resources=[allocation['AllocationId']], Tags=[{'Key': 'Benchmark', 'Value': 'Unikernel'}])
-    public_ip = allocation['PublicIp']
-    print(public_ip)
-    create_text_file_with_ip('/usr/src/backend_osv', public_ip)
-    create_text_file_with_ip('/usr/src/backend_linux', public_ip)
+    ec2_client.create_tags(Resources=[allocation['AllocationId']], Tags=[{'Key': 'Benchmark', 'Value': 'Unikernel'}, {'Key': 'Type', 'Value': 'Control-OSV'}])
+    public_ip_osv = allocation['PublicIp']
+    allocation = ec2_client.allocate_address()
+    ec2_client.create_tags(Resources=[allocation['AllocationId']], Tags=[{'Key': 'Benchmark', 'Value': 'Unikernel'}, {'Key': 'Type', 'Value': 'Control-Linux'}])
+    public_ip_linux = allocation['PublicIp']
+    create_text_file_with_ip('/usr/src/backend_osv', public_ip_osv)
+    create_text_file_with_ip('/usr/src/backend_linux', public_ip_linux)
 except ClientError as e:
     print(e)
     exit(1)

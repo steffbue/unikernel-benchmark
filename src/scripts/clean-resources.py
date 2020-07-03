@@ -62,6 +62,11 @@ bucket = s3_resource.Bucket('linuxbackend')
 bucket.objects.all().delete()
 bucket.delete()
 
+print('Deleting controlbackend bucket')
+bucket = s3_resource.Bucket('controlbackend')
+bucket.objects.all().delete()
+bucket.delete()
+
 iam_client.delete_role_policy(RoleName='vmimport', PolicyName='vmimport')
 iam_client.delete_role(RoleName='vmimport')
 

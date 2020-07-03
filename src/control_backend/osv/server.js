@@ -60,8 +60,8 @@ app.put('/metric/boot', (req, res) => {
 				res.status(500).end();
 				return;
 			}
+			resultReady = true;
 			ec2.waitFor('instanceStopped', { Filters: filterOSVInstanceState }, function(err, data) {
-				resultReady = true;
                 serviceReady = true;
             });
             res.status(200).end();

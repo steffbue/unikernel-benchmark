@@ -7,7 +7,7 @@ const SEC_TO_MS = 1e3;
 const NS_TO_MS = 1e-6;
 
 
-ipAddr = fs.readFileSync('ip-info.txt')
+ipAddr = fs.readFileSync('/ip-info.txt')
 
 axios({
 	method: 'put',

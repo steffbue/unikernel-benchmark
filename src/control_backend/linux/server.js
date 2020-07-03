@@ -5,7 +5,7 @@ const app = express();
 const SEC_TO_MS = 1e3;
 const NS_TO_MS = 1e-6;
 
-var ec2 = new AWS.EC2();
+var ec2 = new AWS.EC2({region: 'eu-central-1'});
 const filter = { Name: 'tag:Benchmark', Values: [ 'Unikernel' ] };
 const filterLinuxInstance = [ filter, { Name: 'tag:Type', Values: [ 'Linux' ] } ];
 

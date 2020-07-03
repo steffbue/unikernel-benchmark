@@ -11,8 +11,7 @@ ipAddr = fs.readFileSync('/ip-info.txt')
 
 axios({
 	method: 'put',
-	url: `http://${ipAddr}:80/metric/boot`,
-	timeout: 500
+	url: `http://${ipAddr}:8080/metric/boot`
 })
 .catch(error => {
 	console.log(error)

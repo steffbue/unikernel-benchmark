@@ -7,7 +7,8 @@ const NS_TO_MS = 1e-6;
 
 var ec2 = new AWS.EC2({region: 'eu-central-1'});
 const filter = { Name: 'tag:Benchmark', Values: [ 'Unikernel' ] };
-const filterLinuxInstance = [ filter, { Name: 'tag:Type', Values: [ 'Linux' ] } ];
+const filterLinuxInstance = { Name: 'tag:Type', Values: [ 'Linux' ] };
+const filterLinuxInstanceState = [filter, filterLinuxInstance, { Name: 'instance-state-name', Values:['stopped', 'running', 'stopping'] }];
 
 var startTime;
 var diffTime;
@@ -19,7 +20,7 @@ app.put('/metric/boot/start', (req, res) => {
 	if (!serviceReady) {
 		res.status(503).end();
 	} else {
-		ec2.describeInstances({ Filters: filterLinuxInstance }, function(err, data) {
+		ec2.describeInstances({ Filters: filterLinuxInstanceState }, function(err, data) {
 			if (err) {
 				res.status(500).end();
 				return;
@@ -50,7 +51,7 @@ app.get('/metric/boot/result', (req, res) => {
 
 app.put('/metric/boot', (req, res) => {
 	diffTime = process.hrtime(startTime);
-	ec2.describeInstances({ Filters: filterLinuxInstance }, function(err, data) {
+	ec2.describeInstances({ Filters: filterLinuxInstanceState }, function(err, data) {
 		if (err) {
 			res.status(500).end();
 			return;
@@ -60,10 +61,10 @@ app.put('/metric/boot', (req, res) => {
 				res.status(500).end();
 				return;
 			}
-			ec2.waitFor('instanceStopped', { Filters: filterLinuxInstance }, function(err, data) {
+			ec2.waitFor('instanceStopped', { Filters: filterLinuxInstanceState }, function(err, data) {
 				resultReady = true;
-				res.status(200).end();
-			});
+            });
+            res.status(200).end();
 		});
 	});
 });

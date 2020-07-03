@@ -31,7 +31,7 @@ def prepare_osv_benchmark_instance(ec2_client, ec2_resource, key_name, secgroup_
     ami_id = resp_ami['Images'][0]['ImageId']
     resp_instance = ec2_resource.create_instances(ImageId=ami_id, InstanceType='t2.micro', KeyName=key_name, SecurityGroupIds=[secgroup_id], MinCount=1, MaxCount=1)
     instance_id = resp_instance[0].id
-    ec2_resource.create_tags(Resources=[instance_id], Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}])
+    ec2_resource.create_tags(Resources=[instance_id], Tags=[{'Key': 'Benchmark', 'Value': 'Unikernel'}, {'Key': 'Type', 'Value': 'OSV'}])
     instance = ec2_resource.Instance(id=instance_id)
     instance.wait_until_running()
     instance.stop()
@@ -52,31 +52,36 @@ def prepare_linux_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_
     instance = ec2_resource.Instance(id=instance_id)
     instance.wait_until_running()
 
+    return instance_id
+
+def stop_linux_instance(instance_id, ec2_client, ec2_resource):
+    instance = ec2_resource.Instance(instance_id)
     # Time for UserData script to prepare instance
     time.sleep(120)
-    
+
     #Stopping instance
     instance.stop()
 
-    return instance_id
-
 def prepare_linux_benchmark_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile):
-    prepare_linux_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile, 'userdata-linuxbackend.sh', Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}, {'Key': 'Type', 'Value': 'Linux'}])
+    instance_id = prepare_linux_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile, 'userdata-linuxbackend.sh', [{'Key':'Benchmark', 'Value':'Unikernel'}, {'Key': 'Type', 'Value': 'Linux'}])
+    stop_linux_instance(instance_id, ec2_client, ec2_resource)
     return
 
 def prepare_control_instance_for_linux_benchmark(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile):
-    instance_id = prepare_linux_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile, 'userdata-controlbackend-linux.sh', Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}, {'Key': 'Type', 'Value': 'Control-Linux'}])
+    instance_id = prepare_linux_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile, 'userdata-controlbackend-linux.sh', [{'Key':'Benchmark', 'Value':'Unikernel'}, {'Key': 'Type', 'Value': 'Control-Linux'}])
     response = ec2_client.describe_addresses(Filters=[{'Name': 'tag:Benchmark', 'Values': ['Unikernel']}, {'Name': 'tag:Type', 'Values': ['Control-Linux']}])
     allocation_id = response['Addresses'][0]['AllocationId']
     ec2_client.associate_address(AllocationId=allocation_id, InstanceId=instance_id)
+    stop_linux_instance(instance_id, ec2_client, ec2_resource)
     return
 
 
 def prepare_control_instance_for_osv_benchmark(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile):
-    instance_id = prepare_linux_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile, 'userdata-controlbackend-osv.sh', Tags=[{'Key':'Benchmark', 'Value':'Unikernel'}, {'Key': 'Type', 'Value': 'Control-OSV'}])
+    instance_id = prepare_linux_instance(ec2_client, ec2_resource, key_name, secgroup_id, iam_instance_profile, 'userdata-controlbackend-osv.sh', [{'Key':'Benchmark', 'Value':'Unikernel'}, {'Key': 'Type', 'Value': 'Control-OSV'}])
     response = ec2_client.describe_addresses(Filters=[{'Name': 'tag:Benchmark', 'Values': ['Unikernel']}, {'Name': 'tag:Type', 'Values': ['Control-OSV']}])
     allocation_id = response['Addresses'][0]['AllocationId']
     ec2_client.associate_address(AllocationId=allocation_id, InstanceId=instance_id)
+    stop_linux_instance(instance_id, ec2_client, ec2_resource)
     return
 
 

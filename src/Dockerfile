@@ -26,6 +26,7 @@ RUN pip3 install boto3
 COPY scripts /usr/src/scripts
 COPY backend /usr/src/backend_osv
 COPY backend /usr/src/backend_linux
+COPY control_backend /usr/src/control_backend
 COPY aws /usr/src/aws
 COPY osv /usr/src/osv
 

@@ -26,7 +26,7 @@ response = ec2_client.describe_key_pairs(Filters=filter)
 for keypair in response['KeyPairs']:
     keyname = keypair['KeyName']
     print('Deleting Key ' + keyname)
-    ec2_client.delete_key_pair(KelinuxyName=keyname)
+    ec2_client.delete_key_pair(KeyName=keyname)
 
 response = ec2_client.describe_security_groups(Filters=filter)
 for secgrp in response['SecurityGroups']:
@@ -52,7 +52,7 @@ for address in response['Addresses']:
     print('Deleting elastic ip ' + allocation_id)
     ec2_client.release_address(AllocationId=allocation_id)
 
-print('Deleting ovimport bucket')linux
+print('Deleting ovimport bucket')
 bucket = s3_resource.Bucket('osvimport')
 bucket.objects.all().delete()
 bucket.delete()

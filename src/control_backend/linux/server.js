@@ -32,7 +32,8 @@ app.put('/metric/boot/start', (req, res) => {
 					return;
 				}
 				startTime = process.hrtime();
-				serviceReady = false;
+                serviceReady = false;
+                resultReady = false;
 				res.status(200).end();
 			});
 		});
@@ -43,8 +44,6 @@ app.get('/metric/boot/result', (req, res) => {
 	if (!resultReady) {
 		res.status(404).end();
 	} else {
-		serviceReady = true;
-		resultReady = false;
 		res.status(200).json({ BootTime: diffTime[0] * SEC_TO_MS + diffTime[1] * NS_TO_MS }).end();
 	}
 });
@@ -62,7 +61,8 @@ app.put('/metric/boot', (req, res) => {
 				return;
 			}
 			ec2.waitFor('instanceStopped', { Filters: filterLinuxInstanceState }, function(err, data) {
-				resultReady = true;
+                resultReady = true;
+                serviceReady = true;
             });
             res.status(200).end();
 		});

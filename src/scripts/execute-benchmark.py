@@ -1,4 +1,5 @@
 import threading
+import requests
 import boto3
 import boto3.session
 from botocore.exceptions import ClientError
@@ -32,10 +33,46 @@ def retrieve_osv_instances_ids(ec2_client, ec2_resource):
     return osv_instance_id, control_osv_instance_id
 
 def measure_boot_time(ec2_client, ec2_resource, instance_id, control_instance_id):
-    return
+    control_instance = ec2_resource.Instance(control_instance_id)
+
+    control_instance.start()
+    control_instance.wait_until_running()
+
+    results = []
+    for i in range(25):
+        res_start = requests.put('http://{}:8080/metric/boot/start'.format(control_instance.public_ip_address))
+        while(True):
+            res_result = requests.get('http://{}:8080/metric/boot/result'.format(control_instance.public_ip_address))
+            if res_result.status == 200:
+                print(res_result.json())
+                results.append(res_result.json()['BootTime'])
+                break
+
+    control_instance.stop()
+    control_instance.wait_until_stopped()
+
+    return results
 
 def measure_execution_time(ec2_client, ec2_resource, instance_id):
-    return
+    instance = ec2_resource.Instance(instance_id)
+
+    instance.start()
+    instance.wait_until_running()
+
+    results = []
+    for i in range(25):
+        while(True):
+            res = requests.get('http://{}:8080/metric/execution'.format(instance.public_ip_address))
+            if res.status == 200:
+                print(res.json())
+                results.append(res.json()['ExecutionTime'])
+                break
+            
+    
+    instance.stop()
+    instance.wait_until_stopped()
+
+    return results
 
 def benchmark_linux(ec2_client, ec2_resource):
     linux_instance_id, control_linux_instance_id = retrieve_linux_instances_ids(ec2_client, ec2_resource)

@@ -22,6 +22,8 @@ RUN apt install -y python3-pip
 RUN apt install -y openssh-client
 
 RUN pip3 install boto3
+RUN pip3 install requests
+RUN pip3 install matplotlib
 
 COPY scripts /usr/src/scripts
 COPY backend /usr/src/backend_osv

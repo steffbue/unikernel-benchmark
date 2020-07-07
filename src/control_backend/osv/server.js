@@ -44,7 +44,7 @@ app.get('/metric/boot/result', (req, res) => {
 	if (!resultReady) {
 		res.status(404).end();
 	} else {
-		res.status(200).json({ BootTime: diffTime[0] * SEC_TO_MS + diffTime[1] * NS_TO_MS }).end();
+		res.status(200).json({ BootTime: (diffTime[0] * SEC_TO_MS) + (diffTime[1] * NS_TO_MS) }).end();
 	}
 });
 

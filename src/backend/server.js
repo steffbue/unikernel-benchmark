@@ -6,6 +6,7 @@ const app = express();
 const SEC_TO_MS = 1e3;
 const NS_TO_MS = 1e-6;
 
+const NUMBER_ITERATIONS = 100;
 
 ipAddr = fs.readFileSync('/ip-info.txt')
 
@@ -17,11 +18,23 @@ axios({
 	console.log(error)
 })
 
+function execution_benchmark_task() {
+	for(let i = 0; i < NUMBER_ITERATIONS; i++) {
+		var randomNumber = Math.floor(Math.random() * 1500);
+		fs.writeFileSync(`randomNumber${i}.txt`, randomNumber);
+	}
+
+	for(let i = 0; i < NUMBER_ITERATIONS; i++) {
+		var number = fs.readFileSync(`randomNumber${i}.txt`);
+		console.log(number)
+	}
+}
+
 
 
 app.get('/metric/execution', (req, res) => {
-	startTime = process.hrtime()
-	// Executing task
+	startTime = process.hrtime();
+	execution_benchmark_task();
 	diffTime = process.hrtime(startTime)
 
 	resJson = {

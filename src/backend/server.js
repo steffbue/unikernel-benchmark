@@ -26,7 +26,7 @@ function benchmark_task() {
 
 	for(let i = 0; i < NUMBER_ITERATIONS; i++) {
 		const randomNumber = Math.floor(Math.random() * 1500);
-		fs.appendFileSync('randomNumbers.txt', randomNumber);
+		fs.appendFileSync('randomNumbers.txt', randomNumber.toString());
 	}
 
 	const str = fs.readFileSync('randomNumbers.txt');

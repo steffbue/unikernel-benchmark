@@ -1,12 +1,13 @@
 const fs = require('fs')
 const axios = require('axios')
 const express = require('express');
+const NodeRSA = require('node-rsa');
 const app = express();
 
 const SEC_TO_MS = 1e3;
 const NS_TO_MS = 1e-6;
 
-const NUMBER_ITERATIONS = 100;
+const NUMBER_ITERATIONS = 1e2;
 
 ipAddr = fs.readFileSync('/ip-info.txt')
 
@@ -18,15 +19,16 @@ axios({
 	console.log(error)
 })
 
-function execution_benchmark_task() {
-	for(let i = 0; i < NUMBER_ITERATIONS; i++) {
-		var randomNumber = Math.floor(Math.random() * 1500);
-		fs.writeFileSync(`randomNumber${i}.txt`, randomNumber);
-	}
+function benchmark_task() {
+	const keys = new NodeRSA({b: 2048});
 
 	for(let i = 0; i < NUMBER_ITERATIONS; i++) {
-		var number = fs.readFileSync(`randomNumber${i}.txt`);
-		console.log(number)
+		const randomNumber = Math.floor(Math.random() * 1500);
+		const encrypted = keys.encrypt(randomNumber, 'base64');
+		const decrypted = keys.decrypt(encrypted, 'utf-8');
+		console.log(randomNumber);
+		console.log(encrypted);
+		console.log(decrypted);
 	}
 }
 
@@ -34,7 +36,7 @@ function execution_benchmark_task() {
 
 app.get('/metric/execution', (req, res) => {
 	startTime = process.hrtime();
-	execution_benchmark_task();
+	benchmark_task();
 	diffTime = process.hrtime(startTime)
 
 	resJson = {

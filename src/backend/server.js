@@ -1,13 +1,12 @@
 const fs = require('fs')
 const axios = require('axios')
 const express = require('express');
-const NodeRSA = require('node-rsa');
 const app = express();
 
 const SEC_TO_MS = 1e3;
 const NS_TO_MS = 1e-6;
 
-const NUMBER_ITERATIONS = 1e2;
+const NUMBER_ITERATIONS = 1e3;
 
 ipAddr = fs.readFileSync('/ip-info.txt')
 
@@ -20,16 +19,18 @@ axios({
 })
 
 function benchmark_task() {
-	const keys = new NodeRSA({b: 2048});
+
+	if(fs.existsSync('randomNumbers.txt')) {
+		fs.unlinkSync('randomNumbers.txt');
+	}
 
 	for(let i = 0; i < NUMBER_ITERATIONS; i++) {
 		const randomNumber = Math.floor(Math.random() * 1500);
-		const encrypted = keys.encrypt(randomNumber, 'base64');
-		const decrypted = keys.decrypt(encrypted, 'utf-8');
-		console.log(randomNumber);
-		console.log(encrypted);
-		console.log(decrypted);
+		fs.appendFileSync('randomNumbers.txt', randomNumber);
 	}
+
+	const str = fs.readFileSync('randomNumbers.txt');
+	console.log(str.toString('utf-8'));
 }
 
 

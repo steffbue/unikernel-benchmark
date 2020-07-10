@@ -10,8 +10,11 @@ const filter = { Name: 'tag:Benchmark', Values: [ 'Unikernel' ] };
 const filterLinuxInstance = { Name: 'tag:Type', Values: [ 'Linux' ] };
 const filterLinuxInstanceState = [filter, filterLinuxInstance, { Name: 'instance-state-name', Values:['stopped', 'running', 'stopping'] }];
 
-var startTime;
-var diffTime;
+var startTimeBoot;
+var diffTimeBoot;
+
+var startTimeStop;
+var diffTimeStop;
 
 var serviceReady = true;
 var resultReady = false;
@@ -31,7 +34,7 @@ app.put('/metric/boot/start', (req, res) => {
 					res.status(500).end();
 					return;
 				}
-				startTime = process.hrtime();
+				startTimeBoot = process.hrtime();
                 serviceReady = false;
                 resultReady = false;
 				res.status(200).end();
@@ -42,27 +45,30 @@ app.put('/metric/boot/start', (req, res) => {
 
 app.get('/metric/boot/result', (req, res) => {
 	if (!resultReady) {
-		res.status(404).end();
+		res.status(503).end();
 	} else {
-		res.status(200).json({ BootTime: (diffTime[0] * SEC_TO_MS) + (diffTime[1] * NS_TO_MS) }).end();
+		res.status(200).json({ BootTime: (diffTimeBoot[0] * SEC_TO_MS) + (diffTimeBoot[1] * NS_TO_MS), StopTime:  (diffTimeStop[0] * SEC_TO_MS) + (diffTimeStop[1] * NS_TO_MS)}).end();
 	}
 });
 
 app.put('/metric/boot', (req, res) => {
-	diffTime = process.hrtime(startTime);
+	diffTimeBoot = process.hrtime(startTimeBoot);
 	ec2.describeInstances({ Filters: filterLinuxInstanceState }, function(err, data) {
 		if (err) {
 			res.status(500).end();
 			return;
 		}
 		ec2.stopInstances({ InstanceIds: [ instanceIdLinux ] }, function(err, data) {
+			startTimeStop = process.hrtime();
 			if (err) {
 				res.status(500).end();
 				return;
 			}
 			resultReady = true;
 			ec2.waitFor('instanceStopped', { Filters: filterLinuxInstanceState }, function(err, data) {
-                serviceReady = true;
+				diffTimeStop = process.hrtime(startTimeStop);
+				serviceReady = true;
+				resultReady = true;
             });
             res.status(200).end();
 		});

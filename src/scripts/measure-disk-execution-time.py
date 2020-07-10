@@ -9,7 +9,7 @@ import boto3.session
 from botocore.exceptions import ClientError
 import measurehelper as mh
 
-NUMBER_ITERATIONS = 15
+NUMBER_ITERATIONS = 20
 
 
 def measure_execution_time(ec2_client, ec2_resource, instance_id):

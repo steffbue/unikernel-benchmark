@@ -9,7 +9,7 @@ const app = express();
 const SEC_TO_MS = 1e3;
 const NS_TO_MS = 1e-6;
 
-const NUMBER_ITERATIONS = 1e3;
+const NUMBER_ITERATIONS = 1e4;
 
 ipAddr = fs.readFileSync('/ip-info.txt')
 
@@ -27,7 +27,7 @@ function generate_random_numbers() {
 	var randomNumbers = [];
 
 	for(let i = 0; i < NUMBER_ITERATIONS; i++) {
-		const randomNumber = Math.floor(Math.random() * 1500);
+		const randomNumber = Math.floor(Math.random() * 80000) + 10000;
 		randomNumbers.push(randomNumber.toString());
 	}
 

@@ -50,7 +50,7 @@ def benchmark_linux(ec2_client, ec2_resource):
     results_path = '/usr/src/results'
     linux_instance_id, control_linux_instance_id = mh.retrieve_linux_instances_ids(ec2_client, ec2_resource)
     results_execution_time = measure_execution_time(ec2_client, ec2_resource, linux_instance_id)
-    mh.store_results(os.path.join(results_path, 'linux-execution-times.txt'), results_execution_time)
+    mh.store_results(os.path.join(results_path, 'linux-disk-execution-times.txt'), results_execution_time)
     return
 
 
@@ -58,7 +58,7 @@ def benchmark_osv(ec2_client, ec2_resource):
     results_path = '/usr/src/results'
     osv_instance_id, control_osv_instance_id = mh.retrieve_osv_instances_ids(ec2_client, ec2_resource)
     results_execution_time = measure_execution_time(ec2_client, ec2_resource, osv_instance_id)
-    mh.store_results(os.path.join(results_path, 'osv-execution-times.txt'), results_execution_time)
+    mh.store_results(os.path.join(results_path, 'osv-disk-execution-times.txt'), results_execution_time)
     return
 
 

@@ -20,22 +20,16 @@ def measure_network_execution_time(ec2_client, ec2_resource, s3_client, instance
 
     time.sleep(30)
 
+    s3_client.create_bucket(Bucket=bucket_name)
+    
     put_url = s3_client.generate_presigned_url('put_object', Params={'Bucket':bucket_name, 'Key':'randomNumbers.txt'}, ExpiresIn=3600)
     get_url = s3_client.generate_presigned_url('get_object', Params={'Bucket':bucket_name, 'Key':'randomNumbers.txt'}, ExpiresIn=3600)
-
-    while(True):
-        res = requests.put('http://{}:8080/metric/network/execution'.format(instance.public_ip_address), data=[put_url, get_url])
-        if res.status_code == 200:
-            break
-        else:
-            sleep_time = int(random.uniform(5, 20))
-            time.sleep(sleep_time)
 
     results = []
     for i in range(NUMBER_ITERATIONS):
         while(True):
-            res = requests.get(
-                'http://{}:8080/metric/network/execution'.format(instance.public_ip_address))
+            res = requests.put(
+                'http://{}:8080/metric/network/execution'.format(instance.public_ip_address), json={'put_url': put_url, 'get_url': get_url})
             if res.status_code == 200:
                 print(res.json())
                 results.append(res.json()['ExecutionTime'])
@@ -56,8 +50,8 @@ ec2_client_t1 = boto3.session.Session().client('ec2')
 ec2_client_t2 = boto3.session.Session().client('ec2')
 ec2_resource_t1 = boto3.session.Session().resource('ec2')
 ec2_resource_t2 = boto3.session.Session().resource('ec2')
-s3_client_t1 = boto3.session.Session().client('s3', endpoint_url='https:s3.eu-central-1.amazonaws.com')
-s3_client_t2 = boto3.session.Session().client('s3', endpoint_url='https:s3.eu-central-1.amazonaws.com')
+s3_client_t1 = boto3.session.Session().client('s3', endpoint_url='https://s3.eu-central-1.amazonaws.com')
+s3_client_t2 = boto3.session.Session().client('s3', endpoint_url='https://s3.eu-central-1.amazonaws.com')
 
 def benchmark_linux(ec2_client, ec2_resource, s3_client):
     results_path = '/usr/src/results'

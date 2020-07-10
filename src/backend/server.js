@@ -2,6 +2,8 @@ const fs = require('fs');
 const axios = require('axios');
 const https = require('https');
 const express = require('express');
+const bodyParser = require('body-parser');
+const url = require('url');
 const app = express();
 
 const SEC_TO_MS = 1e3;
@@ -17,7 +19,9 @@ axios({
 })
 .catch(error => {
 	console.log(error)
-})
+});
+
+app.use(bodyParser.json());
 
 function generate_random_numbers() {
 	var randomNumbers = [];
@@ -30,15 +34,23 @@ function generate_random_numbers() {
 	return randomNumbers;
 }
 
-function upload_data(put_host, put_path, data) {
+function upload_data(putHost, putPath, data) {
 	const options = {
-		hostname: put_host,
+		hostname: putHost,
 		port: 443,
-		oath: put_path,
-		method: 'PUT'
+		path: putPath,
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'text/plain',
+			'Content-Length': Buffer.byteLength(data)
+		}
 	};
 
 	const req = https.request(options, (res) => {
+		res.on('data', (data) => {
+			console.log(data.toString('utf-8'));
+		});
+		
 		res.on('error', (error) => {
 			console.log(error);
 		});
@@ -48,29 +60,34 @@ function upload_data(put_host, put_path, data) {
 	req.end();
 }
 
-function download_data(get_host, get_path, data) {
+function download_data(getHost, getPath) {
 	const options = {
-		hostname: get_host,
+		hostname: getHost,
 		port: 443,
-		oath: get_path,
-		method: 'GET'
+		path: getPath,
+		method: 'GET',
+		headers: {
+			'Accept': 'text/plain'
+		}
 	};
 
 	const req = https.request(options, (res) => {
 		res.on('data', (data) => {
-			console.log(data);
+			console.log(data.toString('utf-8'));
 		});
 		
 		res.on('error', (error) => {
 			console.log(error);
 		});
 	});
+
+	req.end();
 }
 
-function benchmark_network_task(put_host, put_path, get_host, get_path) {
+function benchmark_network_task(putHost, putPath, getHost, getPath) {
 	var randomNumbers = generate_random_numbers();
-	upload_data(put_host, put_path, randomNumbers);
-	download_data(get_host, get_path);
+	upload_data(putHost, putPath, randomNumbers.join());
+	download_data(getHost, getPath);
 	
 }
 
@@ -82,8 +99,11 @@ function benchmark_disk_task() {
 }
 
 app.put('/metric/network/execution', (req, res) => {
+	const getURL = req.body.getURL;
+	const putURL = req.body.putURL;
+
 	startTime = process.hrtime();
-	benchmark_network_task();
+	benchmark_network_task(url.parse(putURL).hostname, url.parse(putURL).pathname + url.parse(putURL).search, url.parse(getURL).hostname, url.parse(getURL).pathname + url.parse(getURL).search);
 	diffTime = process.hrtime(startTime)
 
 	resJson = {

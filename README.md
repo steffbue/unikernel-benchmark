@@ -54,7 +54,7 @@ You can measure the four metrics (Boot Time, Stop Time, Execution Time (Network-
 ./measure-disk-execution-time.sh
 ```
 
-After measuring every metric, you can create plots for them by executing ./create-plots.sh. 
+After measuring every metric, you can create plots for them by executing ./create-plots.sh. The plots can be found in unikernel-benchmark/src/results.
 (Make sure to not execute more than one execution script at the same time)
 
 ## Benchmark Cleanup
